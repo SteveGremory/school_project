@@ -1,0 +1,159 @@
+\documentclass{article}
+
+\usepackage{minted}
+% (2) specify encoding
+\usepackage[T1]{fontenc}
+% (3) load symbol definitions
+\usepackage{textcomp}
+
+\begin{document}
+
+
+\begin{center}
+\huge{Information Pracitices}\\[0.5cm]
+\normalsize
+\textsc{Shaurya International School}\\[2.0cm]
+
+\emph{\LARGE Certificate}\\[2.5cm]
+\end{center}
+\normalsize This is to certify that this is a bonafide record of the project presented by Tejveer Singh of class 12th in partial fulfillment of the project requirements.\\[1.0cm]
+
+\vfill
+
+% Bottom of the page
+\begin{flushright}
+Tejveer Singh \\
+Roll Number: 46\\
+Class 12th\\
+\end{flushright}
+
+\newpage
+
+\begin{abstract}
+This is a simple tensorflow model that takes in human written
+digits as 28x28 pixel images and tries to guess what the digit is.
+The model is very basic and has only been tested on digits 0-9 written
+with black color on a white background. Prerequisites: TensorFlow, Numpy,
+Matplotlib and a dataset of hand drawn images placed in a folder called
+``testdata'' with a csv file called ``testdata.csv'' containing the description
+of the data.
+\end{abstract}
+
+\section{How does it work?}
+The model is first trained on the MNIST dataset which is then normalise
+and is sent to a ML model which first passes it through the Flatten layer
+and then Dense layer which consists of two RELU (Rectify leniar unit) layers
+and a softmax layer which gets the output. Then the model is compiled
+using Sparse Categorical Crossentropy as the loss function and Adam is
+the optimiser with the accuracy metric. After all these params are
+set, the model is trained and saved to the folder ``writtendigits.model.'' \\
+
+After the model has been trained, it is loaded into the program by the
+load model function and the data alongwith the correct answers is
+also loaded into memory using pandas. Now, the program looks for PNG files
+in a folder called ``testdata'' which are named by a certain name convention. \\
+
+These images are now read by OpenCV and inverted by numpy such that instead of
+black on white, it's white on black (hence why the model only works with
+monochrome images). Now, array containing the image data is given to the model
+for it to predict the answer. If the predection is correct, a value of `1' is
+pushed to an array declared earlier in the code to keep track of the correct/wrong
+answers for later use and a print statement stating that the original number and
+the predection is executed. A zero is pushed back to the array if the value is wrong
+however the print statement is executed nonetheless.
+
+Lastly, a graph of 0s and 1s is displayed where a peak (1) suggests that the model
+predected the answer correctly and a 0 suggests the opposite.
+
+\section{Code}
+main.py:
+\begin{minted}{python}
+from train_model import train_model
+import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
+import pandas
+import cv2
+import os
+
+# Create a new model if it doesn't exist
+if os.path.exists("writtendigits.model"):
+    model = tf.keras.models.load_model("writtendigits.model")
+else:
+    train_model()
+    model = tf.keras.models.load_model("writtendigits.model")
+
+# Read the data with the correct information
+data = pandas.read_csv("testdata/numbers.csv")
+correct = []
+
+for image_number in data["num"]:
+    if os.path.exists(f"./testdata/number_{image_number}.png"):
+
+        image = cv2.imread(f"./testdata/number_{image_number}.png")[:, :, 0]
+        image = np.invert(np.array([image]))
+
+        predection = model.predict(image)
+
+        if np.argmax(predection) == image_number:
+            correct += [1]
+        else:
+            correct += [0]
+
+        print("The predection is incorrect:")
+        print(f"Number: {image_number}\t Predection: {np.argmax(predection)}")
+
+# Display a graph of correct/incorrect numbers
+# data to be plotted
+x = np.arange(0, 9)
+y = np.array(correct)
+
+# plotting
+plt.title("Model accuracy")
+plt.xlabel("Predection")
+plt.ylabel("Number")
+plt.plot(x, y, color="green")
+
+plt.show()
+\end{minted}
+
+\newpage
+\begin{flushleft}
+train\_model.py:
+\end{flushleft}
+\begin{minted}{python}
+import tensorflow as tf
+
+def train_model():
+    # Get the MNIST dataset
+    mnist = tf.keras.datasets.mnist
+
+    # Get the training and testing data
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+    # Normalize the data
+    x_train = tf.keras.utils.normalize(x_train, axis=1)
+    x_test = tf.keras.utils.normalize(x_test, axis=1)
+
+    # Get a sequential tensorflow model
+    model = tf.keras.models.Sequential()
+    # Flatten the input shape
+    model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
+    # Add the dense layer
+    # Rectify leniar unit -> RELU
+    model.add(tf.keras.layers.Dense(128, activation="relu"))
+    model.add(tf.keras.layers.Dense(128, activation="relu"))
+    # Output layer
+    # This layer makes sure that all 10 neurons add up to 1
+    # Probability for each digit to be the right answer
+    model.add(tf.keras.layers.Dense(10, activation="softmax"))
+    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+    model.compile(optimizer="adam", loss=loss_fn, metrics=["accuracy"])
+
+    # Train the model
+    # EPOCHs -> How many times will the model see the same data
+    model.fit(x_train, y_train, epochs=3)
+    model.save("writtendigits.model")
+\end{minted}
+
+\end{document}
