@@ -30,4 +30,4 @@ def train_model():
     # Train the model
     # EPOCHs -> How many times will the model see the same data
     model.fit(x_train, y_train, epochs=3)
-    model.save("written_digits.model")
+    model.save("writtendigits.model")

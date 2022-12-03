@@ -1,2 +1,6 @@
 __pycache__/
-written_digits.model/
+writtendigits.model/
+LaTeX/*.aux
+LaTeX/*.log
+LaTeX/*.pdf
+LaTeX/_*
