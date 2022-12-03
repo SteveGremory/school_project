@@ -11,6 +11,7 @@ if os.path.exists("written_digits.model"):
     model = tf.keras.models.load_model("written_digits.model")
 else:
     train_model()
+    model = tf.keras.models.load_model("written_digits.model")
 
 # Read the data with the correct information
 data = pandas.read_csv("testdata/numbers.csv")
@@ -47,8 +48,8 @@ y = np.array(correct)
 
 # plotting
 plt.title("Model accuracy")
-plt.xlabel("X axis")
-plt.ylabel("Y axis")
+plt.xlabel("Predection")
+plt.ylabel("Number")
 plt.plot(x, y, color="green")
 
 plt.show()
